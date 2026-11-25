@@ -1,0 +1,21 @@
+{
+  "title": "Example: small pressure-fed bipropellant vehicle with cold-gas roll control",
+  "gases": ["N2", "He"],
+  "tanks": [
+    {"name": "oxidiser tank", "volume_L": 8.0, "pressure_bar_g": 35.0, "ullage_temp_C": -10.0, "dissolution": 0.05},
+    {"name": "fuel tank", "volume_L": 4.0, "pressure_bar_g": 35.0, "ullage_temp_C": 0.0}
+  ],
+  "thrusters": [
+    {"name": "roll thrusters", "thrust_N": 2.0, "isp_s": {"N2": 65.0, "He": 160.0}, "firing_time_s": 8.0, "count": 4}
+  ],
+  "fixed": [
+    {"name": "post-flight purge", "mass_g": 20.0}
+  ],
+  "bottle": {
+    "fill_pressure_bar_g": 310.0,
+    "fill_temp_C": 20.0,
+    "regulator_dropout_bar": 15.0,
+    "polytropic_n": 1.2
+  },
+  "margin": 0.15
+}
