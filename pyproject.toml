@@ -9,7 +9,7 @@ description = "Real-gas (Peng-Robinson) sizing of pressurant bottles for liquid 
 readme = "README.md"
 license = {text = "MIT"}
 authors = [{name = "Ivan Sushko"}]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["rocketry", "pressurant", "peng-robinson", "real-gas", "cold-gas", "aerospace", "engineering"]
 classifiers = [
     "Programming Language :: Python :: 3",

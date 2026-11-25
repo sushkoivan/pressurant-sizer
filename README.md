@@ -1,5 +1,7 @@
 # pressurant-sizer
 
+[![CI](https://github.com/sushkoivan/pressurant-sizer/actions/workflows/ci.yml/badge.svg)](https://github.com/sushkoivan/pressurant-sizer/actions/workflows/ci.yml)
+
 **How big does the gas bottle have to be?** Real-gas sizing of pressurant bottles for pressure-fed liquid
 rockets, cold-gas thrusters and test stands, in pure Python with no dependencies.
 
@@ -21,7 +23,7 @@ polytropic blowdown. It also gives you the bottle volume, the gas you have to lo
 - **Gas comparison** in one run, e.g. N₂ vs He: volume, loaded mass and stored energy.
 - **Side-by-side ideal-gas answer,** so you can see what the real-gas model changes.
 - **Blowdown curve:** bottle pressure and temperature vs gas delivered, ready for plotting.
-- CLI with JSON case files, and a Python API. Standard library only. Python ≥ 3.9.
+- CLI with JSON case files, and a Python API. Standard library only. Python ≥ 3.10.
 
 ## Install
 
