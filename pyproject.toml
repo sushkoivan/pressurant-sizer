@@ -31,3 +31,8 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[project.urls]
+Homepage = "https://github.com/sushkoivan/pressurant-sizer"
+Source = "https://github.com/sushkoivan/pressurant-sizer"
+Issues = "https://github.com/sushkoivan/pressurant-sizer/issues"

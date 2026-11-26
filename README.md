@@ -5,7 +5,9 @@
 **How big does the gas bottle have to be?** Real-gas sizing of pressurant bottles for pressure-fed liquid
 rockets, cold-gas thrusters and test stands, in pure Python with no dependencies.
 
-![Blowdown curves and compressibility factor](docs/img/blowdown.svg)
+**▶ [Try it in your browser](https://sushkoivan.github.io/pressurant-sizer/)**: no install, runs the real package via Pyodide.
+
+![Blowdown curves and compressibility factor](https://raw.githubusercontent.com/sushkoivan/pressurant-sizer/main/docs/img/blowdown.svg)
 
 Most quick estimates use `pV = mRT`. At 300 bar, nitrogen is about 12 % less dense than an ideal gas says,
 and the gas left in the bottle cools as it expands. Together these make a hand-calculated bottle undersized,

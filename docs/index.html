@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pressurant-sizer — size a pressurant bottle in your browser</title>
+<meta name="description" content="Real-gas (Peng-Robinson) sizing of pressurant bottles for pressure-fed rockets and cold-gas thrusters. Runs the open-source Python package in your browser.">
+<meta property="og:title" content="pressurant-sizer — how big must the gas bottle be?">
+<meta property="og:description" content="Real-gas bottle sizing for rockets and cold-gas thrusters, in your browser.">
+<meta property="og:image" content="https://raw.githubusercontent.com/sushkoivan/pressurant-sizer/main/docs/img/social-preview.png">
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --line:#30363d; --text:#e6edf3; --muted:#9da7b3; --acc:#ff9a3c; --n2:#4ea1ff; --he:#ff9a3c; --ar:#5ad17a; --air:#c58af9; --co2:#f778ba; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  header { max-width:1180px; margin:0 auto; padding:32px 24px 8px; }
+  header h1 { margin:0 0 6px; font-size:30px; }
+  header p { margin:0; color:var(--muted); max-width:820px; }
+  header a { color:var(--acc); }
+  main { max-width:1180px; margin:0 auto; padding:16px 24px 48px; display:grid; grid-template-columns: 420px 1fr; gap:20px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:4px 0 12px; }
+  h2 + h2, .sub { margin-top:18px; }
+  label { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:6px 0; color:var(--text); }
+  label span.u { color:var(--muted); font-size:13px; display:inline-block; width:44px; }
+  input[type=number], input[type=text] { width:92px; background:#0d1117; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 7px; font:inherit; }
+  input[type=text] { width:120px; }
+  .gases { display:flex; flex-wrap:wrap; gap:6px 14px; }
+  .gases label { margin:0; justify-content:flex-start; }
+  table { width:100%; border-collapse:collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align:left; padding:4px 4px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:500; font-size:13px; }
+  td input { width:54px !important; padding:5px 5px !important; }
+  td input[type=text] { width:84px !important; }
+  button { background:#21262d; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 10px; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--acc); }
+  button.primary { background:var(--acc); color:#111; border:none; font-weight:600; padding:9px 16px; width:100%; margin-top:14px; }
+  button.x { padding:2px 7px; }
+  #status { color:var(--muted); font-size:13px; margin-top:8px; min-height:20px; }
+  .cards { display:grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap:10px; margin-bottom:14px; }
+  .card { border:1px solid var(--line); border-radius:8px; padding:10px 12px; }
+  .card .g { font-size:13px; color:var(--muted); }
+  .card .v { font-size:28px; font-weight:700; }
+  .card .d { font-size:12.5px; color:var(--muted); }
+  pre { background:#0d1117; border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; font:12.5px/1.45 Consolas, monospace; color:#c9d1d9; }
+  svg text { fill: var(--muted); font-size:11px; }
+  .warn { border-left:3px solid var(--acc); padding:8px 12px; color:var(--muted); font-size:13px; margin-top:14px; }
+  details summary { cursor:pointer; color:var(--muted); margin-top:10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>How big must the gas bottle be?</h1>
+  <p>Size the pressurant bottle for a pressure-fed rocket or a cold-gas thruster system with a real-gas model
+    (Peng-Robinson) and a polytropic blowdown. This page runs the open-source Python package
+    <a href="https://github.com/sushkoivan/pressurant-sizer">pressurant-sizer</a> in your browser (via Pyodide); nothing is sent to a server.</p>
+</header>
+<main>
+  <section>
+    <h2>Pressurant gases</h2>
+    <div class="gases" id="gases"></div>
+
+    <h2 class="sub">Bottle</h2>
+    <label>Fill pressure <span><input id="pfill" type="number" value="310" step="10"> <span class="u">bar g</span></span></label>
+    <label>Fill temperature <span><input id="tfill" type="number" value="20" step="5"> <span class="u">°C</span></span></label>
+    <label>Regulator dropout <span><input id="dropout" type="number" value="15" step="1"> <span class="u">bar</span></span></label>
+    <label>Polytropic exponent n <span><input id="n" type="number" value="1.2" step="0.05" min="1"> <span class="u">1…γ</span></span></label>
+    <label>Margin on demand <span><input id="margin" type="number" value="15" step="5"> <span class="u">%</span></span></label>
+
+    <h2 class="sub">Tanks emptied under pressure</h2>
+    <table id="tanks"><thead><tr><th>name</th><th>V [L]</th><th>p [bar g]</th><th>T<sub>ull</sub> [°C]</th><th>diss.</th><th></th></tr></thead><tbody></tbody></table>
+    <button onclick="addTank()">+ tank</button>
+
+    <h2 class="sub">Cold-gas thrusters</h2>
+    <table id="thr"><thead><tr><th>name</th><th>F [N]</th><th>count</th><th>t [s]</th><th></th></tr></thead><tbody></tbody></table>
+    <button onclick="addThr()">+ thruster group</button>
+    <details><summary>Thruster Isp per gas</summary><div id="isps"></div></details>
+
+    <button class="primary" id="run" onclick="run()" disabled>Loading Python…</button>
+    <div id="status"></div>
+  </section>
+
+  <section>
+    <h2>Result</h2>
+    <div class="cards" id="cards"></div>
+    <svg id="chart" viewBox="0 0 640 300" width="100%" role="img" aria-label="Bottle pressure versus delivered gas"></svg>
+    <details open><summary>Step-by-step report</summary><pre id="report">Press "Size the bottle".</pre></details>
+    <div class="warn">Preliminary sizing only. Peng-Robinson slightly over-predicts high-pressure gas density, so keep a margin of
+      ≥ 10 %. A 300 bar bottle stores lethal energy: buy certified bottles and proof-test hydrostatically.</div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+<script>
+const GASES = [["N2","nitrogen","--n2",70],["He","helium","--he",165],["Ar","argon","--ar",52],["air","air","--air",69],["CO2","carbon dioxide","--co2",55]];
+const RAW = "https://raw.githubusercontent.com/sushkoivan/pressurant-sizer/main/src/pressurant/";
+const FILES = ["__init__.py","gases.py","eos.py","sizing.py"];
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+$("gases").innerHTML = GASES.map(([k,n,c],i) =>
+  `<label><input type="checkbox" value="${k}" ${i<2?"checked":""}> <span style="color:var(${c})">${n}</span></label>`).join("");
+$("isps").innerHTML = GASES.map(([k,n,c,isp]) =>
+  `<label>${n} <span><input type="number" id="isp_${k}" value="${isp}" step="1"> <span class="u">s</span></span></label>`).join("");
+
+function addTank(v=["tank",5,35,0,0]) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td><input type="text" value="${v[0]}"></td>` + v.slice(1).map(x=>`<td><input type="number" value="${x}" step="any"></td>`).join("")
+    + `<td><button class="x" onclick="this.closest('tr').remove()">×</button></td>`;
+  $("tanks").tBodies[0].appendChild(tr);
+}
+function addThr(v=["thrusters",2,4,8]) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td><input type="text" value="${v[0]}"></td>` + v.slice(1).map(x=>`<td><input type="number" value="${x}" step="any"></td>`).join("")
+    + `<td><button class="x" onclick="this.closest('tr').remove()">×</button></td>`;
+  $("thr").tBodies[0].appendChild(tr);
+}
+addTank(["oxidiser",8,35,-10,0.05]); addTank(["fuel",4,35,0,0]); addThr(["roll RCS",2,4,8]);
+
+const rows = id => [...$(id).tBodies[0].rows].map(r => [...r.querySelectorAll("input")].map(i => i.type==="text" ? i.value : parseFloat(i.value)));
+
+let py;
+(async () => {
+  try {
+    $("status").textContent = "Loading the Python runtime (first visit ~10 MB)…";
+    py = await loadPyodide();
+    py.FS.mkdirTree("/pkg/pressurant");
+    for (const f of FILES) {
+      const r = await fetch(RAW + f); if (!r.ok) throw new Error("could not fetch " + f);
+      py.FS.writeFile("/pkg/pressurant/" + f, await r.text());
+    }
+    py.runPython("import sys; sys.path.insert(0, '/pkg'); import pressurant");
+    $("run").disabled = false; $("run").textContent = "Size the bottle"; $("status").textContent = "Ready.";
+    run();
+  } catch (e) { $("status").textContent = "Failed to load: " + e.message; }
+})();
+
+function run() {
+  const gases = [...document.querySelectorAll("#gases input:checked")].map(i => i.value);
+  if (!gases.length) { $("status").textContent = "Pick at least one gas."; return; }
+  const isp = Object.fromEntries(GASES.map(([k]) => [k, parseFloat($("isp_"+k).value)]));
+  const inp = { gases, isp, tanks: rows("tanks"), thr: rows("thr"),
+    pfill: +$("pfill").value, tfill: +$("tfill").value, dropout: +$("dropout").value, n: +$("n").value, margin: +$("margin").value/100 };
+  py.globals.set("inp_json", JSON.stringify(inp));
+  try {
+    const out = JSON.parse(py.runPython(`
+import json, pressurant as P
+inp = json.loads(inp_json)
+d = [P.TankDemand(t[0] or "tank", t[1]*1e-3, P.bar_g(t[2]), t[3]+273.15, t[4]) for t in inp["tanks"]]
+d += [P.ThrusterDemand(t[0] or "thrusters", t[1], inp["isp"], t[3], int(t[2])) for t in inp["thr"]]
+res = []
+for g in inp["gases"]:
+    r = P.size_bottle(g, d, P.bar_g(inp["pfill"]), inp["tfill"]+273.15, dropout=inp["dropout"]*1e5, n=inp["n"], margin=inp["margin"])
+    c = P.blowdown_curve(g, r.volume, r.p_fill, r.t_fill, r.p_min, r.n, steps=40)
+    res.append(dict(key=g, name=r.gas.name, V=r.volume_l, Vi=r.ideal_gas_volume*1e3, m=r.charged_mass, E=r.stored_energy,
+                    report=r.report(), curve=[(x[0]/r.demand_with_margin*100, P.to_bar_g(x[1])) for x in c]))
+json.dumps(res)`));
+    show(out); $("status").textContent = "";
+  } catch (e) { $("status").textContent = "Error: " + String(e.message).split("\n").filter(Boolean).pop(); }
+}
+
+function show(res) {
+  const col = k => css(GASES.find(g => g[0]===k)[2]);
+  $("cards").innerHTML = res.map(r => `<div class="card"><div class="g" style="color:${col(r.key)}">${r.name}</div>
+    <div class="v">${r.V.toFixed(2)} L</div><div class="d">${r.m.toFixed(3)} kg loaded · ${(r.E/1e3).toFixed(0)} kJ stored<br>ideal gas would say ${r.Vi.toFixed(2)} L</div></div>`).join("");
+  $("report").textContent = res.map(r => r.report).join("\n\n");
+  const W=640,H=300,L=52,R=16,T=16,B=40, pmax=Math.max(...res.map(r=>r.curve[0][1])), pmin=0;
+  const x = v => L + v/100*(W-L-R), y = p => T + (1-(p-pmin)/(pmax-pmin))*(H-T-B);
+  let s = "";
+  for (let p=0; p<=pmax; p+=50) s += `<line x1="${L}" x2="${W-R}" y1="${y(p)}" y2="${y(p)}" stroke="${css('--line')}"/><text x="${L-6}" y="${y(p)+4}" text-anchor="end">${p}</text>`;
+  for (let v=0; v<=100; v+=20) s += `<text x="${x(v)}" y="${H-B+16}" text-anchor="middle">${v}</text>`;
+  s += `<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">gas delivered [% of design demand]</text><text transform="translate(13 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">bottle pressure [bar g]</text>`;
+  for (const r of res) s += `<polyline fill="none" stroke-width="2.2" stroke="${col(r.key)}" points="${r.curve.map(([a,b])=>x(a)+","+y(b)).join(" ")}"/>`;
+  $("chart").innerHTML = s;
+}
+</script>
+</body>
