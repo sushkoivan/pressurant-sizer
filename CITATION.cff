@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "pressurant-sizer: Real-gas (Peng-Robinson) sizing of pressurant bottles for pressure-fed rockets, cold-gas thrusters and test stands"
+type: software
+authors:
+  - family-names: Sushko
+    given-names: Ivan
+repository-code: "https://github.com/sushkoivan/pressurant-sizer"
+license: MIT
+version: 0.1.0
+date-released: "2026-11-26"
+keywords:
+  - "rocketry"
+  - "pressurant"
+  - "Peng-Robinson"
+  - "cold gas"
+  - "Python"
